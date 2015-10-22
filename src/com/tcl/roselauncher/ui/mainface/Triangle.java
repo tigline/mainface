@@ -5,7 +5,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import android.opengl.GLES20;
-import static com.tcl.roselauncher.ui.mainface.ShaderUtil.createProgram;;
+import static com.tcl.roselauncher.ui.mainface.ShaderUtil.createProgram;
 //纹理三角形
 public class Triangle 
 {	
@@ -99,7 +99,7 @@ public class Triangle
     	 MatrixState.setInitStack();
     	 
          //设置沿Z轴正向位移1
-         MatrixState.transtate(0, 0, 1);
+         MatrixState.translate(0, 0, 1);
          
          //设置绕y轴旋转
          MatrixState.rotate(yAngle, 0, 1, 0);

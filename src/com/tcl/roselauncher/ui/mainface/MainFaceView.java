@@ -12,6 +12,7 @@ import javax.microedition.khronos.opengles.GL10;
 
 
 
+
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -19,6 +20,7 @@ import android.graphics.PixelFormat;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.GLUtils;
+import android.util.Log;
 import android.view.MotionEvent;
 
 /**
@@ -37,6 +39,7 @@ public class MainFaceView extends GLSurfaceView {
     private float mPreviousX;//上次的触控位置X坐标
 	private SceneRenderer mRenderer; 
 	private int textureId;
+	boolean lightFlag=true;
 	public MainFaceView(Context context) {
 		super(context);
 		// TODO Auto-generated constructor stub
@@ -44,8 +47,9 @@ public class MainFaceView extends GLSurfaceView {
 		this.setEGLConfigChooser(8, 8, 8, 8, 16, 0);
 		mRenderer = new SceneRenderer();
 		setRenderer(mRenderer);
-		this.getHolder().setFormat(PixelFormat.TRANSLUCENT);//设置透明
-        this.setZOrderOnTop(true);//设置置顶
+		//setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
+		this.getHolder().setFormat(PixelFormat.TRANSLUCENT);
+        this.setZOrderOnTop(true);
 	}
 	
 	  //触摸事件回调方法
@@ -57,8 +61,8 @@ public class MainFaceView extends GLSurfaceView {
         case MotionEvent.ACTION_MOVE:
             float dy = y - mPreviousY;//计算触控笔Y位移
             float dx = x - mPreviousX;//计算触控笔X位移
-            mRenderer.texRect.yAngle += dx * TOUCH_SCALE_FACTOR;//设置纹理矩形绕y轴旋转角度
-            mRenderer.texRect.zAngle+= dy * TOUCH_SCALE_FACTOR;//设置第纹理矩形绕z轴旋转角度
+            mRenderer.circle.yAngle += dx * TOUCH_SCALE_FACTOR;//设置纹理矩形绕y轴旋转角度
+            mRenderer.circle.zAngle+= dy * TOUCH_SCALE_FACTOR;//设置第纹理矩形绕z轴旋转角度
         }
         mPreviousY = y;//记录触控笔位置
         mPreviousX = x;//记录触控笔位置
@@ -70,13 +74,18 @@ public class MainFaceView extends GLSurfaceView {
 		/* (non-Javadoc)
 		 * @see android.opengl.GLSurfaceView.Renderer#onDrawFrame(javax.microedition.khronos.opengles.GL10)
 		 */
-		Triangle texRect;//纹理矩形
-		
+		Circle circle;//纹理矩形
+		//Triangle triangle;
 		@Override
 		public void onDrawFrame(GL10 arg0) {
 			// TODO Auto-generated method stub
 			GLES20.glClear(GLES20.GL_DEPTH_BUFFER_BIT | GLES20.GL_COLOR_BUFFER_BIT);
-			texRect.drawSelf(textureId);
+			//MatrixState.pushMatrix();
+            //MatrixState.translate(0, 0, -10);
+            //circle.drawSelf(textureId);
+			circle.drawSelf(textureId);
+            //MatrixState.popMatrix();
+			
 			
 		}
 
@@ -88,8 +97,34 @@ public class MainFaceView extends GLSurfaceView {
 			// TODO Auto-generated method stub
 			GLES20.glViewport(0, 0, width, height);
 			float ratio = (float) width /height;
-			MatrixState.setProject(-ratio, ratio, -1, 1, 1, 10);
+			MatrixState.setProjectFrustum(-ratio, ratio, -1, 1, 1, 10);
 			MatrixState.setCamera(0,0,3,0f,0f,0f,0f,1.0f,0.0f);
+			//初始化光源
+//	        MatrixState.setLightLocation(100 , 0 , 100);
+//	                      
+//	        //启动一个线程定时修改灯光的位置
+//	        new Thread()
+//	        {
+//				public void run()
+//				{
+//					float redAngle = 0;
+//					while(lightFlag)
+//					{	
+//						//根据角度计算灯光的位置
+//						redAngle=(redAngle+5)%360;
+//						float rx=(float) (15*Math.sin(Math.toRadians(redAngle)));
+//						float rz=(float) (15*Math.cos(Math.toRadians(redAngle)));
+//						MatrixState.setLightLocation(rx, 0, rz);
+//						//Log.d("MainFace", rx + ".." + rz);
+//						
+//						try {
+//								Thread.sleep(100);
+//							} catch (InterruptedException e) {				  			
+//								e.printStackTrace();
+//							}
+//					}
+//				}
+//	        }.start();
 		}
 
 		/* (non-Javadoc)
@@ -99,9 +134,15 @@ public class MainFaceView extends GLSurfaceView {
 		public void onSurfaceCreated(GL10 arg0, EGLConfig arg1) {
 			// TODO Auto-generated method stub
 			GLES20.glClearColor(0f, 0f, 0f, 0f);
-			texRect = new Triangle(MainFaceView.this);
-			GLES20.glEnable(GLES20.GL_DEPTH_TEST);
-			initTexture();
+			//启用深度测试
+            GLES20.glEnable(GLES20.GL_DEPTH_TEST);
+    		//设置为打开背面剪裁
+            GLES20.glEnable(GLES20.GL_CULL_FACE);
+			//初始化变换矩阵
+            MatrixState.setInitStack();
+            initTexture();
+			circle = new Circle(MainFaceView.this,1.0f,1.5f,100);
+            //triangle = new Triangle(MainFaceView.this);
 			GLES20.glDisable(GLES20.GL_CULL_FACE);
 		}
 		
@@ -125,7 +166,7 @@ public class MainFaceView extends GLSurfaceView {
         
      
         //通过输入流加载图片===============begin===================
-        InputStream is = this.getResources().openRawResource(R.drawable.wall);
+        InputStream is = this.getResources().openRawResource(R.drawable.circle4);
         Bitmap bitmapTmp;
         try 
         {
