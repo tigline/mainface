@@ -29,7 +29,7 @@ public class FontUtil {
 		Bitmap bmTemp = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
 		Canvas canvasTemp = new Canvas(bmTemp);
 		for (int i = 0; i < str.length; i++) {
-			canvasTemp.drawText(str[i], 0, textSize*i+(i-1), paint);
+			canvasTemp.drawText(str[i], 0, textSize*i+(i-1)*5, paint);
 		}
 		return bmTemp;
 	}

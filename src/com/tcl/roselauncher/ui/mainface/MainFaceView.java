@@ -3,21 +3,12 @@
  */
 package com.tcl.roselauncher.ui.mainface;
 
-import static android.opengl.GLES20.GL_BLEND;
-import static android.opengl.GLES20.GL_ONE;
-import static android.opengl.GLES20.GL_SRC_ALPHA_SATURATE;
-import static android.opengl.GLES20.glBlendFunc;
-import static android.opengl.GLES20.glEnable;
 
 import java.io.IOException;
 import java.io.InputStream;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
-
-
-
-
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -26,7 +17,6 @@ import android.graphics.PixelFormat;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.GLUtils;
-import android.util.Log;
 import android.view.MotionEvent;
 
 /**
@@ -81,10 +71,12 @@ public class MainFaceView extends GLSurfaceView {
 
 		public int textureId4;
 		public int textureId3;
+		public int texId = -1;
 		/* (non-Javadoc)
 		 * @see android.opengl.GLSurfaceView.Renderer#onDrawFrame(javax.microedition.khronos.opengles.GL10)
 		 */
 		Circle circle4, circle3;//纹理矩形
+		TextRect tRect;
 		//Triangle triangle;
 		@Override
 		public void onDrawFrame(GL10 arg0) {
@@ -92,8 +84,13 @@ public class MainFaceView extends GLSurfaceView {
 			GLES20.glClear(GLES20.GL_DEPTH_BUFFER_BIT | GLES20.GL_COLOR_BUFFER_BIT);
 //			glEnable(GL_BLEND);
 //        	glBlendFunc(GL_SRC_ALPHA_SATURATE, GL_ONE);
-
-
+			
+			
+        	
+			MatrixState.pushMatrix();
+            tRect.drawSelf(texId);
+            MatrixState.popMatrix();
+            
             MatrixState.pushMatrix();
 			circle3.drawSelf(textureId3);
             MatrixState.popMatrix();
@@ -155,8 +152,17 @@ public class MainFaceView extends GLSurfaceView {
             GLES20.glEnable(GLES20.GL_CULL_FACE);
 			//初始化变换矩阵
             MatrixState.setInitStack();
-            textureId4 = initTexture(R.drawable.circle4);
-            textureId3 = initTexture(R.drawable.circle3);
+            FontUtil.cIndex=(FontUtil.cIndex+1)%FontUtil.content.length;
+        	FontUtil.updateRGB();
+        	if (texId != -1) {
+        		GLES20.glDeleteTextures(1, new int[]{texId}, 0);
+			}
+            Bitmap bm=FontUtil.generateWTF(FontUtil.getContent(FontUtil.cIndex, FontUtil.content), 512, 512);
+            texId=initTexture(0,bm);
+            
+        	
+            textureId4 = initTexture(R.drawable.circle4,null);
+            textureId3 = initTexture(R.drawable.circle3,null);
 			circle4 = new Circle(MainFaceView.this,1.0f,1.0f,100);
 			circle3 = new Circle(MainFaceView.this,0.8f,1.0f,100);
             //triangle = new Triangle(MainFaceView.this);
@@ -164,7 +170,8 @@ public class MainFaceView extends GLSurfaceView {
 		}
 		
 	}
-	public int initTexture(int sourseId)//textureId
+	
+	public int initTexture(int sourseId, Bitmap bitmap)//textureId
 	{
 		//生成纹理ID
 		int[] textures = new int[1];
@@ -183,23 +190,29 @@ public class MainFaceView extends GLSurfaceView {
         
      
         //通过输入流加载图片===============begin===================
-        InputStream is = this.getResources().openRawResource(sourseId);
-        Bitmap bitmapTmp;
-        try 
-        {
-        	bitmapTmp = BitmapFactory.decodeStream(is);
-        } 
-        finally 
-        {
-            try 
-            {
-                is.close();
-            } 
-            catch(IOException e) 
-            {
-                e.printStackTrace();
-            }
-        }
+		Bitmap bitmapTmp;
+		if (null != bitmap) {
+			bitmapTmp = bitmap;
+		}else{
+			 InputStream is = this.getResources().openRawResource(sourseId);
+		        
+		        try 
+		        {
+		        	bitmapTmp = BitmapFactory.decodeStream(is);
+		        } 
+		        finally 
+		        {
+		            try 
+		            {
+		                is.close();
+		            } 
+		            catch(IOException e) 
+		            {
+		                e.printStackTrace();
+		            }
+		        }
+		}
+       
         //通过输入流加载图片===============end=====================  
         
         //实际加载纹理
