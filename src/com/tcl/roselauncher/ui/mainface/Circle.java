@@ -8,12 +8,6 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
-
-
-
-
-
-
 import android.opengl.GLES20;
 import static com.tcl.roselauncher.ui.mainface.ShaderUtil.createProgram;
 
@@ -151,7 +145,17 @@ public class Circle
   {        
   	 //制定使用某套shader程序
   	 GLES20.glUseProgram(mProgram);   
-  	 
+	  	//MatrixState.setInitStack();
+		 
+	    //设置沿Z轴正向位移1
+	   // MatrixState.translate(0, 0, 1);
+	    
+	    //设置绕y轴旋转
+	    MatrixState.rotate(yAngle, 0, 1, 0);
+	    //设置绕z轴旋转
+	    MatrixState.rotate(zAngle, 0, 0, 1);  
+	    //设置绕x轴旋转
+	    MatrixState.rotate(xAngle, 1, 0, 0);
   	// MatrixState.setInitStack();
        //将最终变换矩阵传入shader程序
        GLES20.glUniformMatrix4fv(muMVPMatrixHandle, 1, false, MatrixState.getFinalMatrix(), 0);
@@ -202,7 +206,7 @@ public class Circle
        //启用顶点法向量数据
 //       GLES20.glEnableVertexAttribArray(maNormalHandle);
        
-       
+
        //绑定纹理
        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texId);
