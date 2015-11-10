@@ -91,7 +91,7 @@ public class Circle
 			textures[stCount++]=(float) (0.5f-0.5f*Math.sin(angradNext));//st坐标
 			textures[stCount++]=(float) (0.5f-0.5f*Math.cos(angradNext));
 		}
-		ByteBuffer vbb = ByteBuffer.allocateDirect(vertices.length*4);//创建顶点坐标数据缓冲
+	  ByteBuffer vbb = ByteBuffer.allocateDirect(vertices.length*4);//创建顶点坐标数据缓冲
       vbb.order(ByteOrder.nativeOrder());//设置字节顺序为本地操作系统顺序
       mVertexBuffer = vbb.asFloatBuffer();//转换为float型缓冲
       mVertexBuffer.put(vertices);//向缓冲区中放入顶点坐标数据

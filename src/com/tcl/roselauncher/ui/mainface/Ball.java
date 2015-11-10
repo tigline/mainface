@@ -15,12 +15,12 @@ public class Ball {
 	
 	int mProgram;// 自定义渲染管线着色器程序id
 	int muMVPMatrixHandle;// 总变换矩阵引用
-  int muMMatrixHandle;//位置、旋转变换矩阵引用
+    int muMMatrixHandle;//位置、旋转变换矩阵引用
 	int muRHandle;// 球的半径属性引用   
 	int maPositionHandle; // 顶点位置属性引用
-  int maNormalHandle; //顶点法向量属性引用
-  int maLightLocationHandle;//光源位置属性引用
-  int maCameraHandle; //摄像机位置属性引用 
+    int maNormalHandle; //顶点法向量属性引用
+    int maLightLocationHandle;//光源位置属性引用
+    int maCameraHandle; //摄像机位置属性引用 
   
   
 	String mVertexShader;// 顶点着色器
@@ -180,7 +180,7 @@ public class Ball {
 		// 将半径尺寸传入着色器程序
 		GLES20.glUniform1f(muRHandle, r * UNIT_SIZE);  
       //将光源位置传入着色器程序   
-      GLES20.glUniform3fv(maLightLocationHandle, 1, MatrixState.lightPositionFB);
+      //GLES20.glUniform3fv(maLightLocationHandle, 1, MatrixState.lightPositionFB);
       //将摄像机位置传入着色器程序   
       GLES20.glUniform3fv(maCameraHandle, 1, MatrixState.cameraFB);
       

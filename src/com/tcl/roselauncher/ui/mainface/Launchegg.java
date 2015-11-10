@@ -36,7 +36,7 @@ public class Launchegg {
 	FloatBuffer   mVertexBuffer;//顶点坐标数据缓冲
 	FloatBuffer   mTexCoorBuffer;//顶点纹理坐标数据缓冲
     int vCount=0; 
-    public void Earth(MainFaceView mv,float r){    	
+    public Launchegg(MainFaceView mv,float r){    	
     	//初始化顶点坐标与着色数据
     	initVertexData(r);
     	//初始化着色器        
