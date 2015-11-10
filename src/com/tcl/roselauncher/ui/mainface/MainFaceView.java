@@ -4,11 +4,15 @@
 package com.tcl.roselauncher.ui.mainface;
 
 
+import static com.tcl.roselauncher.ui.mainface.Constant.*;
+
 import java.io.IOException;
 import java.io.InputStream;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
+
+
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -34,7 +38,9 @@ public class MainFaceView extends GLSurfaceView {
 	private float mPreviousY;//上次的触控位置Y坐标
     private float mPreviousX;//上次的触控位置X坐标 
 	private SceneRenderer mRenderer; 
-
+	float lightOffset=-4;//灯光的位置或方向的偏移量
+	public Ball ball;
+	public static int angleTemp = 0;
 	boolean lightFlag=true;
 	public MainFaceView(Context context) {
 		super(context);
@@ -61,6 +67,8 @@ public class MainFaceView extends GLSurfaceView {
             mRenderer.circle4.zAngle+= dy * TOUCH_SCALE_FACTOR;//设置第纹理矩形绕z轴旋转角度
             mRenderer.circle3.yAngle += dx * TOUCH_SCALE_FACTOR;//设置纹理矩形绕y轴旋转角度
             mRenderer.circle3.zAngle+= dy * TOUCH_SCALE_FACTOR;//设置第纹理矩形绕z轴旋转角度
+            ball.yAngle += dx * TOUCH_SCALE_FACTOR;//设置填充椭圆绕y轴旋转的角度
+            ball.xAngle+= dy * TOUCH_SCALE_FACTOR;//设置填充椭圆绕x轴旋转的角度
         }
         mPreviousY = y;//记录触控笔位置
         mPreviousX = x;//记录触控笔位置
@@ -72,6 +80,7 @@ public class MainFaceView extends GLSurfaceView {
 		public int textureId4;
 		public int textureId3;
 		public int texId = -1;
+		//float angleTemp=(float)Math.toDegrees(100.0f/(UNIT_SIZE));
 		/* (non-Javadoc)
 		 * @see android.opengl.GLSurfaceView.Renderer#onDrawFrame(javax.microedition.khronos.opengles.GL10)
 		 */
@@ -84,20 +93,27 @@ public class MainFaceView extends GLSurfaceView {
 			GLES20.glClear(GLES20.GL_DEPTH_BUFFER_BIT | GLES20.GL_COLOR_BUFFER_BIT);
 //			glEnable(GL_BLEND);
 //        	glBlendFunc(GL_SRC_ALPHA_SATURATE, GL_ONE);
+			MatrixState.setLightLocation(lightOffset, 0, 1.5f);
 			
 			
-        	
-			MatrixState.pushMatrix();
-            tRect.drawSelf(texId);
-            MatrixState.popMatrix();
+//			MatrixState.pushMatrix();
+//            tRect.drawSelf(texId);
+//            MatrixState.popMatrix();
+//            
+//            MatrixState.pushMatrix();
+//			circle3.drawSelf(textureId3);
+//            MatrixState.popMatrix();
+//            
+//			MatrixState.pushMatrix();
+//			circle4.drawSelf(textureId4);
+//            MatrixState.popMatrix();	
             
-            MatrixState.pushMatrix();
-			circle3.drawSelf(textureId3);
+            MatrixState.pushMatrix();			
+			MatrixState.rotate(angleTemp, 1, 0, 0);
+			MatrixState.translate(2.5f, 0, 0);
+			ball.drawSelf();
             MatrixState.popMatrix();
-            
-			MatrixState.pushMatrix();
-			circle4.drawSelf(textureId4);
-            MatrixState.popMatrix();			
+            angleTemp ++;
 			
 		}
 
@@ -152,26 +168,27 @@ public class MainFaceView extends GLSurfaceView {
             GLES20.glEnable(GLES20.GL_CULL_FACE);
 			//初始化变换矩阵
             MatrixState.setInitStack();
-            FontUtil.cIndex=(FontUtil.cIndex+1)%FontUtil.content.length;
-        	FontUtil.updateRGB();
-        	if (texId != -1) {
-        		GLES20.glDeleteTextures(1, new int[]{texId}, 0);
-			}
-            Bitmap bm=FontUtil.generateWTF(FontUtil.getContent(FontUtil.cIndex, FontUtil.content), 512, 512);
-            texId=initTexture(0,bm);
             
-        	
-            textureId4 = initTexture(R.drawable.circle4,null);
-            textureId3 = initTexture(R.drawable.circle3,null);
+            Bitmap bm=FontUtil.generateWLT(FontUtil.getContent(1, FontUtil.content), 256, 256);
+	        texId=initTextureBmp(bm);
+	        tRect = new TextRect(MainFaceView.this);
+//            FontUtil.cIndex=(FontUtil.cIndex+1)%FontUtil.content.length;
+//        	FontUtil.updateRGB();
+//        	if (texId != -1) {
+//        		GLES20.glDeleteTextures(1, new int[]{texId}, 0);
+//			}
+           
+	        ball = new Ball(MainFaceView.this);
+            textureId4 = initTexture(R.drawable.circle4);
+            textureId3 = initTexture(R.drawable.circle3);
 			circle4 = new Circle(MainFaceView.this,1.0f,1.0f,100);
 			circle3 = new Circle(MainFaceView.this,0.8f,1.0f,100);
-            //triangle = new Triangle(MainFaceView.this);
+//            triangle = new Triangle(MainFaceView.this);
 			GLES20.glDisable(GLES20.GL_CULL_FACE);
 		}
-		
 	}
 	
-	public int initTexture(int sourseId, Bitmap bitmap)//textureId
+	public int initTexture(int sourseId)//textureId
 	{
 		//生成纹理ID
 		int[] textures = new int[1];
@@ -186,14 +203,11 @@ public class MainFaceView extends GLSurfaceView {
 		GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER,GLES20.GL_NEAREST);
 		GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D,GLES20.GL_TEXTURE_MAG_FILTER,GLES20.GL_LINEAR);
 		GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S,GLES20.GL_CLAMP_TO_EDGE);
-		GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T,GLES20.GL_CLAMP_TO_EDGE);
-        
+		GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T,GLES20.GL_CLAMP_TO_EDGE);        
      
         //通过输入流加载图片===============begin===================
 		Bitmap bitmapTmp;
-		if (null != bitmap) {
-			bitmapTmp = bitmap;
-		}else{
+
 			 InputStream is = this.getResources().openRawResource(sourseId);
 		        
 		        try 
@@ -211,7 +225,7 @@ public class MainFaceView extends GLSurfaceView {
 		                e.printStackTrace();
 		            }
 		        }
-		}
+		
        
         //通过输入流加载图片===============end=====================  
         
@@ -224,6 +238,35 @@ public class MainFaceView extends GLSurfaceView {
         		0					  //纹理边框尺寸
         );
         bitmapTmp.recycle(); 		  //纹理加载成功后释放图片
+        return textureId;
+	}
+	
+	public int initTextureBmp(Bitmap bitmap)
+	{
+		//生成纹理ID
+		int[] textures = new int[1];
+		GLES20.glGenTextures
+		(
+				1,          //产生的纹理id的数量
+				textures,   //纹理id的数组
+				0           //偏移量
+		);    
+		int textureId=textures[0];    
+		GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId);
+		GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER,GLES20.GL_NEAREST);
+		GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D,GLES20.GL_TEXTURE_MAG_FILTER,GLES20.GL_LINEAR);
+		GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S,GLES20.GL_REPEAT);
+		GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T,GLES20.GL_REPEAT);
+        
+        //实际加载纹理
+        GLUtils.texImage2D
+        (
+        		GLES20.GL_TEXTURE_2D,   //纹理类型，在OpenGL ES中必须为GL10.GL_TEXTURE_2D
+        		0, 					  //纹理的层次，0表示基本图像层，可以理解为直接贴图
+        		bitmap, 			  //纹理图像
+        		0					  //纹理边框尺寸
+        );
+        bitmap.recycle(); 		  //纹理加载成功后释放图片
         return textureId;
 	}
 

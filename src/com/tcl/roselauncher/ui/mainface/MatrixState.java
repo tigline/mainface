@@ -168,6 +168,7 @@ public static float[] getCaMatrix()
 
 //设置灯光位置的方法
 static ByteBuffer llbbL = ByteBuffer.allocateDirect(3*4);
+public static FloatBuffer lightPositionFBSun;
 public static void setLightLocation(float x,float y,float z)
 {
 	llbbL.clear();
